@@ -1,29 +1,46 @@
 import React, { Component } from 'react';
-import Loader from 'halogen/GridLoader';
 
 import logo from './node-dc.jpeg';
 import './App.css';
 
-const Note = ({ id, note }) => (
-  <div>
-    <div>id: {id}</div>
-    <div>note: {note}</div>
-  </div>
-);
+const NOTES_ENDPOINT = `${process.env.REACT_APP_SERVICE_HOST}/notes`;
+const Note = ({ id, note }) => (<div>{note}</div>);
 
 class App extends Component {
   constructor() {
     super();
     this.state = {
-      hasDataLoaded: false,
       notes: []
     }
+    this.fetchNotes = this.fetchNotes.bind(this);
+    this.clickHandler = this.clickHandler.bind(this);
+    this.saveNote= this.saveNote.bind(this);
   }
-  componentDidMount() {
-    fetch(`${process.env.REACT_APP_SERVICE_HOST}/notes`, { method: "GET", mode: "cors" })
+
+  fetchNotes() {
+    fetch(NOTES_ENDPOINT, { method: "GET", mode: "cors" })
     .then((res) => res.json())
-    .then((json) => this.setState({ notes: json.data, hasDataLoaded: true }));
+    .then((json) => this.setState({ notes: json.data }));
   }
+
+  saveNote(note) {
+    return fetch(NOTES_ENDPOINT, { method: "POST", mode: "cors", body: JSON.stringify({ note }) })
+    .then((res) => res.json())
+  }
+  
+  clickHandler(e) {
+    const note = document.getElementById("newNote").value;
+    this.saveNote(note)
+    .then(() => {
+      document.getElementById("newNote").value = "";
+      this.fetchNotes();
+    });
+  }
+
+  componentDidMount() {
+    this.fetchNotes();
+  }
+
   render() {
     const notes = this.state.notes.map(({ id, note }) => <Note key={id} id={id} note={note} />);
     return (
@@ -32,7 +49,9 @@ class App extends Component {
           <img src={logo} alt="logo" />
           <h2>Welcome to Node DC</h2>
         </div>
-        { this.state.hasDataLoaded ? notes : <Loader color="#26A65B" size="16px" margin="4px"/>}
+        <input type="text" name="newNote" id="newNote" /> 
+        <button onClick={this.clickHandler}>save</button>
+        { notes }
       </div>
     );
   }
