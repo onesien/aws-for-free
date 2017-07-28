@@ -12,6 +12,7 @@ This will get a local version of you app running at `http://localhost:300` with 
 
 Steps to put application on the internet:
 * Create an AWS s3 bucket on amazon.
+* Once the bucket is created, enable `Static Website Hosting` for the bucket under the properties tab
 * Create an AWS user that has permissions to that bucket.
 * Create a profile in your `~/.aws/credentials` 
 ```
